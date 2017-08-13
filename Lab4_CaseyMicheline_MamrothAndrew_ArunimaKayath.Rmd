@@ -1,0 +1,18 @@
+---
+title: "Lab4_CaseyMicheline_MamrothAndrew_ArunimaKayath"
+author: "Andrew Mamroth"
+date: "August 13, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+##Exploratory Analysis
+
+##Building a Model
+
+##Conclusions
