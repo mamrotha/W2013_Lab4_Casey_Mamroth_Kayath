@@ -1,0 +1,86 @@
+---
+title: "Lab4_EDA"
+author: "Micheline Casey"
+date: "8/12/2017"
+header-includes:
+   - \usepackage{amsmath}
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/workspace/Stats")
+library(car)
+library(dplyr)
+library("Hmisc")
+library(lmtest)
+library(sandwich)
+library(stargazer)
+library("effsize")
+```
+
+```{r load data}
+df <- read.csv("crime.csv", stringsAsFactors = T)
+#str(df)
+#describe(df)
+#unique(df)
+summary(df)
+
+```
+
+
+```{r plots}
+hist(df$crmrte, breaks = 50, xlab = "crime rate", ylab = "Frequency", main = "Crime Rate Hist")
+hist(df$prbarr, breaks = 50, xlab = "probability of arrest", ylab = "Frequency", main = "Probability of Arrest Hist")
+hist(df$prbconv, breaks = 50, xlab = "probability of conviction", ylab = "Frequency", main = "Probabiity of Conviction Hist")
+hist(df$prbpris, breaks = 50, xlab = "probability of prison sentence", ylab = "Frequency", main = "Probability of Prison Sentence Hist")
+hist(df$avgsen, breaks = 50, xlab = "average sentence", ylab = "Frequency", main = "Average Sentence Hist")
+hist(df$polpc, breaks = 50, xlab = "police per capita", ylab = "Frequency", main = "Police Per Capita Hist")
+hist(df$density, breaks = 50, xlab = "Population Density (per sq mile)", ylab = "Frequency", main = "Population Density Hist")
+hist(df$taxpc, breaks = 50, xlab = "tax revenue per capita", ylab = "Frequency", main = "Tax Revenue Per Capita Hist")
+hist(df$west, breaks = 50, xlab = "west", ylab = "Frequency", main = "West Hist")
+hist(df$central, breaks = 50, xlab = "central", ylab = "Frequency", main = "Central Hist")
+hist(df$urban, breaks = 50, xlab = "urban", ylab = "Frequency", main = "Urban Hist")
+hist(df$pctmin80, breaks = 50, xlab = "percent minority (1980)", ylab = "Frequency", main = "Percent Minority Hist")
+hist(df$wcon, breaks = 50, xlab = "weekly wage (construction)", ylab = "Frequency", main = "Weekly Wage, Construction Hist")
+hist(df$wtuc, breaks = 50, xlab = "weekly wage (trns, util, commun)", ylab = "Frequency", main = "Weekly Wage, Trans/Util/Comms Hist")
+hist(df$wtrd, breaks = 50, xlab = "weekly wage (trade)", ylab = "Frequency", main = "Weekly Wage, Trade Hist")
+hist(df$wfir, breaks = 50, xlab = "weekly wage (fin, ins, re)", ylab = "Frequency", main = "Weekly Wage, Fins/Ins/RealEstate Hist")
+hist(df$wser, breaks = 50, xlab = "weekly wage (service)", ylab = "Frequency", main = "Weekly Wage, Service Hist")
+hist(df$wmfg, breaks = 50, xlab = "weekly wage (manufacturing)", ylab = "Frequency", main = "Weekly Wage, Manufacturing")
+hist(df$wfed, breaks = 50, xlab = "weekly wage (federal)", ylab = "Frequency", main = "Weekly Wage, Federal Hist")
+hist(df$wsta, breaks = 50, xlab = "weekly wage (state)", ylab = "Frequency", main = "Weekly Wage, State")
+hist(df$wloc, breaks = 50, xlab = "weekly wage (local)", ylab = "Frequency", main = "Weekly Wage, Local Hist")
+hist(df$mix, breaks = 50, xlab = "offence mix", ylab = "Frequency", main = "Offence Mix Hist")
+hist(df$pctymle, breaks = 50, xlab = "% young male", ylab = "Frequency", main = "Percent Young Male Hist")
+scatterplotMatrix(~crmrte + prbarr + prbconv + prbpris + avgsen, data= df )
+scatterplotMatrix(~crmrte + polpc + density + taxpc, data= df )
+scatterplotMatrix(~crmrte + pctmin80 + pctymle, data= df )
+scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data= df )
+```
+
+```{r outliers}
+df[df$crmrte >= 0.0950 | df$pctymle >= 0.20,]  #county:119,133
+df[df$prbarr >= 0.80, ]   #county:115
+df[df$prbconv >= 1.6, ]   #county:185, 195
+df[df$prbpris >= 0.575, ] #county:5,145
+df[df$avgsen >= 15, ]    #county:41,115,127
+df[df$polpc >= 0.004, ]    #county:55,115,195
+df[df$density >= 6, ]  #county:67,119,129
+df[df$taxpc >= 60, ]  #county:19,55,105,119,129
+df[df$taxpc <= 27, ] #county:3,151,197
+df[df$pctmin80 >= 60, ] #county:15,131,155,185
+df[df$pctmin80 <= 3, ] #county:9,11,87,115,189
+df[df$pctmin80 >=55 | df$pctmin80<= 10, ]
+df[df$urban ==1, ]  #county:21,51,63,67,81,119,129,183
+df[df$west ==1 | df$urban ==1 | df$central ==1, ]  #57 total
+df[df$west ==0 & df$urban ==0 & df$central ==0, ]  #county:13,15,17,19,41,47,49,53,55,61,65,79,83,85,91,93,101,107,117,127,131,133,137,139,141,143,147,155,163,165,187,191,195
+```
+
+
+
+
+
+
+
+
