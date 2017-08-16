@@ -78,6 +78,175 @@ df[df$west ==0 & df$urban ==0 & df$central ==0, ]  #county:13,15,17,19,41,47,49,
 ```
 
 
+```{r bivariate lm analysis}
+plot(df$crmrte, df$county)
+model1 <- lm(crmrte~county, data = df)
+model1
+abline(model1)
+summary(model1) #Multiple R-squared:  0.0004323; p: 0.846
+cor(df$crmrte, df$county, use="pairwise.complete.obs")   #0.02079069
+
+plot(df$avgsen, df$crmrte)
+model2 <- lm(crmrte~avgsen, data = df)
+model2
+abline(model2)
+summary(model2)  #R-squared:  0.0003919; p:0.853 
+cor(df$crmrte, df$avgsen, use="pairwise.complete.obs")   #0.01979653
+
+plot(df$polpc, df$crmrte)
+model3 <- lm(crmrte~polpc, data = df)
+model3
+abline(model3)
+summary(model3)  #R-squared:  0.02798; p:0.115 
+cor(df$crmrte, df$polpc, use="pairwise.complete.obs")   #0.1672816
+
+plot(df$density, df$crmrte)
+model4 <- lm(crmrte~density, data = df)
+model4
+abline(model4)
+summary(model4)    #R-squared:  0.5297; p:4.45e-16
+cor(df$crmrte, df$density, use="pairwise.complete.obs")   #0.7277783
+
+plot(df$taxpc, df$crmrte)
+model5 <- lm(crmrte~taxpc, data = df)
+model5
+abline(model5)
+summary(model5)   #R-squared:  0.2013; p:p-value: 9.181e-06
+cor(df$crmrte, df$taxpc, use="pairwise.complete.obs")   #0.4487151
+
+plot(df$pctmin80, df$crmrte)
+model6 <- lm(crmrte~pctmin80, data = df)
+model6
+abline(model6)  
+summary(model6)  #R-squared:  0.033; p:p-value: 0.08662
+cor(df$crmrte, df$pctmin80, use="pairwise.complete.obs")   #0.1816506
+
+plot(df$mix, df$crmrte)
+model7 <- lm(crmrte~mix, data = df)
+model7
+abline(model7)  #negative slope/correlation
+summary(model7)    #R-squared:  0.01742; p:p-value: 0.2149
+cor(df$crmrte, df$mix, use="pairwise.complete.obs")   #-0.1320004
+
+plot(df$pctymle, df$crmrte)
+model8 <- lm(crmrte~pctymle, data = df)
+model8
+abline(model8)  
+summary(model8)   #R-squared:  0.0843; p:0.005504
+cor(df$crmrte, df$pctymle, use="pairwise.complete.obs")  #0.2903397
+
+plot(df$wcon, df$crmrte)
+model9 <- lm(crmrte~wcon, data = df)
+model9
+abline(model9)
+summary(model9)   #R-squared:  0.1544; p:0.0001275
+cor(df$crmrte, df$wcon, use="pairwise.complete.obs")    #0.3929616
+
+plot(df$wtuc, df$crmrte)
+model10 <- lm(crmrte~wtuc, data = df)
+model10
+abline(model10)
+summary(model10)   #R-squared:  0.05569; p:0.02514
+cor(df$crmrte, df$wtuc, use="pairwise.complete.obs")   #0.2359957
+
+plot(df$wtrd, df$crmrte)
+model11 <- lm(crmrte~wtrd, data = df)
+model11
+abline(model11)
+summary(model11)   #R-squared:  0.1825; p:2.675e-05
+cor(df$crmrte, df$wtrd, use="pairwise.complete.obs")   #0.4272226
+
+plot(df$wfir, df$crmrte)
+model12 <- lm(crmrte~wfir, data = df)
+model12
+abline(model12)
+summary(model12)   #R-squared:  0.1129; p:0.001204
+cor(df$crmrte, df$wfir, use="pairwise.complete.obs")   #0.3360261
+
+plot(df$wser, df$crmrte)
+model13 <- lm(crmrte~wser, data = df)
+model13
+abline(model13)
+summary(model13)   #R-squared:  0.002711; p:0.626
+cor(df$crmrte, df$wser, use="pairwise.complete.obs")   #-0.05206995
+
+plot(df$wmfg, df$crmrte)
+model14 <- lm(crmrte~wmfg, data = df)
+model14
+abline(model14)
+summary(model14)   #R-squared:  0.1243; p:0.0006543
+cor(df$crmrte, df$wmfg, use="pairwise.complete.obs")   #0.3525612
+
+plot(df$wfed, df$crmrte)
+model15 <- lm(crmrte~wfed, data = df)
+model15
+abline(model15)
+summary(model15)   #R-squared:  0.24; p:9.54e-07
+cor(df$crmrte, df$wfed, use="pairwise.complete.obs")   #0.4899163
+
+plot(df$wsta, df$crmrte)
+model16 <- lm(crmrte~wsta, data = df)
+model16
+abline(model16)
+summary(model16)   #R-squared:  0.03994; p:0.05896
+cor(df$crmrte, df$wsta, use="pairwise.complete.obs")   #0.1998467
+
+plot(df$wloc, df$crmrte)
+model17 <- lm(crmrte~wloc, data = df)
+model17
+abline(model17)
+summary(model17)   #R-squared:  0.1295; p:0.0004951
+cor(df$crmrte, df$wloc, use="pairwise.complete.obs")   #0.3598293
+
+mean1<- apply(df[16:24], 2, mean)
+mean(mean1)   #328.0903
+plot(mean1, xaxt = "n", xlab='Mean of Wage per Profession', ylab = "mean in dollars (weekly)")
+axis(1, at = 1:9, labels = c("con", "tuc", "trd", "fir", "ser", "mfg", "fed", "sta", "loc" ))
+
+```
+
+
+```{r multivariate relationship analysis}
+model20 <- lm(crmrte~wloc + wsta + wfed, data = df)
+summary(model20)   #R-squared:  0.2652; Adjusted R-squared:  0.2396 
+
+model21 <- lm(crmrte~polpc + density + taxpc, data = df)
+summary(model21)   #R-squared:  0.5814; Adjusted R-squared:  0.5668
+
+model22 <- lm(crmrte~polpc + density, data = df)
+summary(model22)   #R-squared:  0.5322,	Adjusted R-squared:  0.5214 
+
+model23 <- lm(crmrte~polpc + taxpc, data = df)
+summary(model23)   #R-squared:  0.2032,	Adjusted R-squared:  0.1849 
+
+model24 <- lm(crmrte~density + taxpc, data = df)
+summary(model24)   #R-squared:  0.5814,	Adjusted R-squared:  0.5718 
+
+model25 <- lm(crmrte~wcon + wtuc + wtrd + wfir + wser + wmfg, data = df)
+summary(model25)   #R-squared: 0.2517,	Adjusted R-squared:  0.1976 
+
+model26 <- lm(crmrte~wcon + wtuc + wtrd + wfir, data = df)
+summary(model26)   #R-squared:  0.2192,	Adjusted R-squared:  0.1825 
+
+model27 <- lm(crmrte~wcon + wtuc + wser + wmfg, data = df)
+summary(model27)   #R-squared:  0.2101,	Adjusted R-squared:  0.1729 
+
+model28 <- lm(crmrte~wtrd + wfir + wser + wmfg, data = df)
+summary(model28)   #R-squared:  0.2284,	Adjusted R-squared:  0.1921
+
+model29 <- lm(crmrte~pctmin80 + pctymle + density, data = df)
+summary(model29)   #R-squared: 0.6301,	Adjusted R-squared:  0.6172 
+
+model30 <- lm(crmrte~pctmin80 + pctymle, data = df)
+summary(model30)   #R-squared:  0.1194,	Adjusted R-squared:  0.09913
+
+model31 <- lm(crmrte~pctmin80 + density, data = df)
+summary(model31)   #R-squared:  0.5857,	Adjusted R-squared:  0.5762
+
+model32 <- lm(crmrte~pctymle + density, data = df)
+summary(model32)   #R-squared:  0.573,	Adjusted R-squared:  0.5632 
+
+```
 
 
 
