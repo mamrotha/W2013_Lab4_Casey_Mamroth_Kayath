@@ -60,21 +60,21 @@ scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data= df )
 ```
 
 ```{r outliers}
-df[df$crmrte >= 0.0950 | df$pctymle >= 0.20,]  #county:119,133
-df[df$prbarr >= 0.80, ]   #county:115
-df[df$prbconv >= 1.6, ]   #county:185, 195
-df[df$prbpris >= 0.575, ] #county:5,145
-df[df$avgsen >= 15, ]    #county:41,115,127
-df[df$polpc >= 0.004, ]    #county:55,115,195
-df[df$density >= 6, ]  #county:67,119,129
-df[df$taxpc >= 60, ]  #county:19,55,105,119,129
-df[df$taxpc <= 27, ] #county:3,151,197
-df[df$pctmin80 >= 60, ] #county:15,131,155,185
-df[df$pctmin80 <= 3, ] #county:9,11,87,115,189
-df[df$pctmin80 >=55 | df$pctmin80<= 10, ]
-df[df$urban ==1, ]  #county:21,51,63,67,81,119,129,183
-df[df$west ==1 | df$urban ==1 | df$central ==1, ]  #57 total
-df[df$west ==0 & df$urban ==0 & df$central ==0, ]  #county:13,15,17,19,41,47,49,53,55,61,65,79,83,85,91,93,101,107,117,127,131,133,137,139,141,143,147,155,163,165,187,191,195
+#df[df$crmrte >= 0.0950 | df$pctymle >= 0.20,]  #county:119,133
+#df[df$prbarr >= 0.80, ]   #county:115
+#df[df$prbconv >= 1.6, ]   #county:185, 195
+#df[df$prbpris >= 0.575, ] #county:5,145
+#df[df$avgsen >= 15, ]    #county:41,115,127
+#df[df$polpc >= 0.004, ]    #county:55,115,195
+#df[df$density >= 6, ]  #county:67,119,129
+#df[df$taxpc >= 60, ]  #county:19,55,105,119,129
+#df[df$taxpc <= 27, ] #county:3,151,197
+#df[df$pctmin80 >= 60, ] #county:15,131,155,185
+#df[df$pctmin80 <= 3, ] #county:9,11,87,115,189
+#df[df$pctmin80 >=55 | df$pctmin80<= 10, ]
+#df[df$urban ==1, ]  #county:21,51,63,67,81,119,129,183
+#df[df$west ==1 | df$urban ==1 | df$central ==1, ]  #57 total
+#df[df$west ==0 & df$urban ==0 & df$central ==0, ]  #county:13,15,17,19,41,47,49,53,55,61,65,79,83,85,91,93,101,107,117,127,131,133,137,139,141,143,147,155,163,165,187,191,195
 ```
 
 
