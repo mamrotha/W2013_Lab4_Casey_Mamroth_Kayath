@@ -6,32 +6,42 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,fig.height = 4,comment = NA)
 setwd("C:/Users/mamro_000/Desktop/Berkeley Courses/W203 Stats/Week 13 Files/W2013_Lab4_Casey_Mamroth_Kayath")
 crime <- read.csv("crime.csv")
 library(car)
+library(stargazer)
+library(usdm)
+library(sandwich)
+library(lmtest)
 ```
 
 ## Introduction
 
+\newpage
 ##Exploratory Analysis
 
+\newpage
 ##Building a Model
 
 To build the model, we use a backwards approach.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.
 
 ```{r}
-summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
-           +crime$polpc+crime$density+crime$taxpc+crime$west+crime$central
-           +crime$urban+crime$pctmin80+crime$wcon+crime$wtuc+crime$wtrd
-           +crime$wfir+crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc
-           +crime$mix+crime$pctymle))
+model_1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
+                    +crime$avgsen+crime$polpc+crime$density+crime$taxpc
+                    +crime$west+crime$central+crime$urban+crime$pctmin80
+                    +crime$wcon+crime$wtuc+crime$wtrd+crime$wfir+crime$wser
+                    +crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
+                    +crime$pctymle)
+
+summary(model_1)
 ```  
 From here we trim the variables with the least explanatory power, but also it should be noted that some variables simply have very little correlation with our dependant variable crime rate, such as average sentence and probability of prison.  
 
 ```{r}
-summary(lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
-             crime$polpc+crime$pctmin80))$adj.r.squared
+model_2<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80)
+summary(model_2)$adj.r.square
 dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
 cor(dat_1)
 ```  
@@ -52,8 +62,51 @@ summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
 ```
 
 
-
+\newpage
 ##Verify Assumptions
 
+Here we verify the the six assumptions of our model:  
+
+  1) Linearity of the Parameters
+  2) Random Sampling
+  3) No Perfect Multicollinearity
+  4) Zero Conditional Mean
+  5) Homoskedasticity
+  6) Normality of Residuals
+  
+First we check for linearity by looking at the Residuals vs Fitted plot.    
+```{r}
+plot(model_2, which=1)
+```  
+Here we see evidence of nonlinear relationship at the lower end of the range of our dependant variable.  We address this by looking at the log-log relationship with respect to crimerte, density, and polpc, our variables that show the strongest evidence of skew.  
+
+```{r}
+model_3<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
+             log(crime$polpc)+crime$pctmin80)
+plot(model_3)
+```  
+
+This plot is very strong evidence that the log-log transform takes care of the linearity assumption and the zero conditional mean assumption.  Additionally, the normal QQ plot fits extremely well so we can safely assume we have normality of our residuals.  
+
+```{r}
+dat_2<-data.frame(log(crime$density),log(crime$polpc),crime$prbarr,
+                  crime$prbconv,crime$pctmin80)
+vif(dat_2)
+```  
+To check for multicollinearity we use the measured variance inflation factors shown above.  These values are sufficiently low for each of our independant variables so there is very little evidence of multicollinearity.
+
+For the assumption of a random sample, we have to assume that the person gathering the data for the model took proper precautions to gather a truly random sample. We could gather a second sample and compare the distributions of the two samples and see how similar they are, but this would likely be costly and time consuming.  For the purposes of this study, we assume that the person gathering the information used due diligence to gather a sample would truly is representative of the larger population of counties that the candidate intends to represent.  
+
+Referring back to the Residuals vs Fitted plot, we see strong evidence of f heteroskedasticity and will use robust standard errors when assessing our model from here.
+
+```{r}
+coeftest(model_3, vcov=vcovHC)
+se.model = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
+```
+
+\newpage
 ##Conclusions
 
+```{r}
+stargazer(model_3, type="text", se=list(se.model))
+```

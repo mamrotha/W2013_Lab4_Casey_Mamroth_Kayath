@@ -84,6 +84,9 @@ summary(lm(log(crime$crmrte)~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgs
 summary(lm(log(crime$crmrte)~log(crime$density)+crime$prbarr
              +crime$prbconv+log(crime$polpc)+crime$pctmin80))
 
+summary(lm(log(crime$crmrte)~log(crime$density)+crime$prbarr
+           +crime$prbconv+log(crime$polpc)+crime$pctmin80))
+
 
 summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
            +crime$polpc+crime$taxpc+crime$west+crime$central
@@ -102,3 +105,10 @@ lapply(crime[5:26], function(x) cor(resid,x))
 
 summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
            +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
+
+model_1<-summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
+                    +crime$avgsen+crime$polpc+crime$density+crime$taxpc
+                    +crime$west+crime$central+crime$urban+crime$pctmin80
+                    +crime$wcon+crime$wtuc+crime$wtrd+crime$wfir+crime$wser
+                    +crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
+                    +crime$pctymle))
