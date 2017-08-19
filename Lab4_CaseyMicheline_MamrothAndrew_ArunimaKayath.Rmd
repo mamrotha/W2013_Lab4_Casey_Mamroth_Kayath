@@ -1,5 +1,5 @@
 ---
-title: "Lab4_CaseyMicheline_MamrothAndrew_ArunimaKayath"
+title: "Lab4_CaseyMicheline_MamrothAndrew_ArunimaKayath_Draft"
 author: "Andrew Mamroth"
 date: "August 13, 2017"
 output: pdf_document
@@ -7,6 +7,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+setwd("C:/Users/mamro_000/Desktop/Berkeley Courses/W203 Stats/Week 13 Files/W2013_Lab4_Casey_Mamroth_Kayath")
+crime <- read.csv("crime.csv")
+library(car)
 ```
 
 ## Introduction
@@ -15,4 +18,42 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##Building a Model
 
+To build the model, we use a backwards approach.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.
+
+```{r}
+summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
+           +crime$polpc+crime$density+crime$taxpc+crime$west+crime$central
+           +crime$urban+crime$pctmin80+crime$wcon+crime$wtuc+crime$wtrd
+           +crime$wfir+crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc
+           +crime$mix+crime$pctymle))
+```  
+From here we trim the variables with the least explanatory power, but also it should be noted that some variables simply have very little correlation with our dependant variable crime rate, such as average sentence and probability of prison.  
+
+```{r}
+summary(lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80))$adj.r.squared
+dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
+cor(dat_1)
+```  
+From here, we see that these 5 variables contain almost all of the information of the other variables.  Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
+
+Density seems to be the strongest predictor of crime rate in the data.  We include it first but it should be noted that if the urban flag is used in lew of density the model loses very little explanatory power because the two are highly correlated so little information is added by including it, and since density is more highly correlated with our dependant variable we choose to use it over the urban flag.  
+```{r}
+summary(lm(crime$crmrte~crime$urban+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80))$adj.r.squared
+dat1<-data.frame(crime$crmrte,crime$density,crime$urban)
+cor(dat1)
+```  
+Next we turn to wages. Even alone they seem to have little predictive power.  It may be that case that what we really want to measure is not wages but unemployment as it may be that case that even if one doesn't have much money, they are at least employed and therefore will commit less crimes.
+
+```{r}
+summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
+           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
+```
+
+
+
+##Verify Assumptions
+
 ##Conclusions
+
