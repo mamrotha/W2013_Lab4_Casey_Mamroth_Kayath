@@ -1,0 +1,148 @@
+---
+title: "Lab 4"
+author: "Arunima Kayath"
+date: "August 17, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(dplyr)
+library("Hmisc")
+library(lmtest)
+library(sandwich)
+library("effsize")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r load}
+data <- read.csv("crime.csv", stringsAsFactors = T)
+head(data)
+str(data)
+describe(data)
+data$totwage<-data$wcon+data$wtuc+data$wtrd+data$wfir+data$wser+data$wmfg+data$wfed+data$wsta+data$wloc
+hist(df$crmrte, breaks = 50, xlab = "crime rate", ylab = "Frequency", main = "Crime Rate Hist")
+hist(df$prbarr, breaks = 50, xlab = "probability of arrest", ylab = "Frequency", main = "Probability of Arrest Hist")
+hist(df$prbconv, breaks = 50, xlab = "probability of conviction", ylab = "Frequency", main = "Probabiity of Conviction Hist")
+hist(df$prbpris, breaks = 50, xlab = "probability of prison sentence", ylab = "Frequency", main = "Probability of Prison Sentence Hist")
+hist(df$avgsen, breaks = 50, xlab = "average sentence", ylab = "Frequency", main = "Average Sentence Hist")
+hist(df$polpc, breaks = 50, xlab = "police per capita", ylab = "Frequency", main = "Police Per Capita Hist")
+hist(df$density, breaks = 50, xlab = "Population Density (per sq mile)", ylab = "Frequency", main = "Population Density Hist")
+hist(df$taxpc, breaks = 50, xlab = "tax revenue per capita", ylab = "Frequency", main = "Tax Revenue Per Capita Hist")
+hist(df$west, breaks = 50, xlab = "west", ylab = "Frequency", main = "West Hist")
+hist(df$central, breaks = 50, xlab = "central", ylab = "Frequency", main = "Central Hist")
+hist(df$urban, breaks = 50, xlab = "urban", ylab = "Frequency", main = "Urban Hist")
+hist(df$pctmin80, breaks = 50, xlab = "percent minority (1980)", ylab = "Frequency", main = "Percent Minority Hist")
+hist(df$wcon, breaks = 50, xlab = "weekly wage (construction)", ylab = "Frequency", main = "Weekly Wage, Construction Hist")
+hist(df$wtuc, breaks = 50, xlab = "weekly wage (trns, util, commun)", ylab = "Frequency", main = "Weekly Wage, Trans/Util/Comms Hist")
+hist(df$wtrd, breaks = 50, xlab = "weekly wage (trade)", ylab = "Frequency", main = "Weekly Wage, Trade Hist")
+hist(df$wfir, breaks = 50, xlab = "weekly wage (fin, ins, re)", ylab = "Frequency", main = "Weekly Wage, Fins/Ins/RealEstate Hist")
+hist(df$wser, breaks = 50, xlab = "weekly wage (service)", ylab = "Frequency", main = "Weekly Wage, Service Hist")
+hist(df$wmfg, breaks = 50, xlab = "weekly wage (manufacturing)", ylab = "Frequency", main = "Weekly Wage, Manufacturing")
+hist(df$wfed, breaks = 50, xlab = "weekly wage (federal)", ylab = "Frequency", main = "Weekly Wage, Federal Hist")
+hist(df$wsta, breaks = 50, xlab = "weekly wage (state)", ylab = "Frequency", main = "Weekly Wage, State")
+hist(df$wloc, breaks = 50, xlab = "weekly wage (local)", ylab = "Frequency", main = "Weekly Wage, Local Hist")
+hist(df$mix, breaks = 50, xlab = "offence mix", ylab = "Frequency", main = "Offence Mix Hist")
+hist(df$pctymle, breaks = 50, xlab = "% young male", ylab = "Frequency", main = "Percent Young Male Hist")
+
+boxplot(density~urban,data = data, main = "population density by urban / rural") # additional plot
+boxplot(crmrte~urban, data = data, main = "crime rate by urban / rural") #additional plot
+boxplot(crmrte~central, data = data, main = "crime rate by central/non") #additional plot
+boxplot(crmrte~west, data = data, main = "crime rate by west/non") #additional plot
+boxplot(taxpc~urban,data = data, main = "tax percent by urban / rural") #additional plot
+boxplot(wfed~urban,data = data, main = "tax percent by urban / rural") #additional plot
+
+cor(data[4:27])
+scatterplotMatrix(~crmrte + prbarr + prbconv + prbpris + avgsen, data= df )
+scatterplotMatrix(~crmrte + polpc + density + taxpc + urban, data= df )
+scatterplotMatrix(~crmrte + pctmin80 + pctymle, data= df )
+scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data= df )
+```
+
+Key observations :
+
+Urban really slopes population density, taxpc, and crimerate. So may be an important indicator variable / interaction with some of these variables that show up as significant.
+
+
+```{r models}
+(model1 <- lm(crmrte~density, data = data)) #picked density as the first variable as it shows the most correlation.
+summary(model1) 
+plot(model1) # model does not meet MLR 4', and MLR 5,6
+plot(model1$fitted.values,data$crmrte)
+
+(model1a <- lm(crmrte~log(density), data = data))
+summary(model1a) 
+plot(model1a)   # model does not meet MLR 4 or 4' though heteroskedasticity reduces substantially.
+plot(model1a$fitted.values,data$crmrte)
+
+(model1b <- lm(log(crmrte)~density, data = data))
+summary(model1b) 
+plot(model1b) # model does not meet MLR 4', and MLR 5,6
+plot(model1b$fitted.values,data$crmrte)
+
+(model1c <- lm(log(crmrte)~log(density), data = data))
+summary(model1c) 
+plot(model1c) # log-log model follows MLR 4,5,6 much better than the non-trandformed or log-level, level-log values. So further analysis builds on this.
+plot(model1c$fitted.values,data$crmrte) 
+
+(model2 <- lm(log(crmrte)~log(density)+taxpc, data = data)) #trying taxpc as the second variable as within set of next highest correlations.
+summary(model2)
+plot(model2) 
+waldtest(model1c, model2, vcov = vcovHC) # while it improves r-square (0.48 to 0.53, not significant in F-test. P-value ~ 0.09)
+
+(model2a <- lm(log(crmrte)~log(density)+urban+urban*log(density), data = data)) #trying urban as a variable as also high correlation
+summary(model2a)
+plot(model2a) 
+waldtest(model1c, model2a, vcov = vcovHC) # neither individual urban co-eff or overall F-test is significant. Effect is probably picked up in the density function.
+
+(model3 <- lm(log(crmrte)~log(density)+prbarr+prbconv, data = data)) #tried all 4 of the variables that point to consequence of crim - ie probability of being arrested, convicted, prison, and average sentence. Only the first we had significant p-values, and overall had significant F-test. So kept the first two and that is model 2.
+summary(model3) # R-square improved to 0.64
+plot(model3)
+waldtest(model1c, model3, vcov = vcovHC) 
+
+(model4 <- lm(log(crmrte)~log(density)+prbarr+prbconv+pctmin80+pctymle+totwage+west+central+polpc, data = data)) #trying remaining variables that seemed to have meaningful correlation. 
+summary(model4) # R-square improved to 0.85. pctmin80, polpc clearly significant. central marginally significant. Rest additional variables not significant.
+plot(model4)
+waldtest(model3, model4, vcov = vcovHC) #sum total of additions leads to significant improvement.
+
+(model4a <- lm(log(crmrte)~log(density)+prbarr+prbconv+pctmin80+central+polpc, data = data)) #model that takes out individually non-significant variables from previous all inclusive model.
+summary(model4a) # R square drops very marginally to 0.84
+plot(model4a) # couple of data points that are outliers also are showing up as material cook's distance ie high influence.
+waldtest(model4a, model4, vcov = vcovHC) # F test vs removed variables shows that the additional variables were not jointly significant.
+waldtest(model3, model4a, vcov = vcovHC) # however, the variables that have been kept vs model 3 are jointly significant.
+
+datan = data[-c(25,51),]
+(model4b <- lm(log(crmrte)~log(density)+prbarr+prbconv+pctmin80+central+polpc, data = datan)) #restimating the model co-efficients without the two outlier observations.
+summary(model4b)
+plot(model4b)
+
+(m_crmrte <- mean(data$crmrte))
+(m_density <- mean(log(data$density)))
+(m_prbarr <-mean(data$prbarr))
+(m_prbconv <- mean(data$prbconv))
+(m_pctmin80 <- mean(data$pctmin80))
+(m_polpc <- mean(data$polpc))
+
+(model4b$coefficients[2]*m_density)
+(model4b$coefficients[3]*m_prbarr)
+(model4b$coefficients[4]*m_prbconv)
+(model4b$coefficients[5]*m_pctmin80)
+(model4b$coefficients[6]*1)
+(model4b$coefficients[7]*m_polpc)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
