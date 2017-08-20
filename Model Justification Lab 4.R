@@ -62,3 +62,9 @@ model1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$polpc+
 summary(model1)
 
 lapply(crime[5:26], function(x) cor(crime$west, x))
+
+head(crime$prbconv, 20)
+hist(crime$prbconv)
+
+head(crime$prbarr, 20)
+hist(crime$prbarr)

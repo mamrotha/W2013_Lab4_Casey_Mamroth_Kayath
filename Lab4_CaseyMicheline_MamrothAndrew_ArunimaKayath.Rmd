@@ -25,7 +25,7 @@ Following that, we then explain why the information for the variables removed is
 \newpage
 
 ##Exploratory Analysis
-A thorough exploratory analysis of the crimes data set was to better understand the data set, the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. Outlier data was reviewed for significance and possible patterns. We also examined the relationships between variables from a variety of perspectives to support model building. Histograms were run on all variables to understand their distributions. A select set for our key variables (crmrte, prbarr, prbconv, polpc, pctmin80) is provided here. 
+A thorough exploratory analysis of the crimes data set was performed to better understand the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. Outlier data was reviewed for significance and possible patterns. We also examined the relationships between variables from a variety of perspectives to support model building. Histograms were run on all variables to understand their distributions. A select set for our key variables (crmrte, prbarr, prbconv, polpc, pctmin80) is provided here. 
 
 ```{r histograms}
 hist(crime$crmrte, breaks = 50, xlab = "crime rate", ylab = "Frequency", main = "Crime Rate Hist")
@@ -33,6 +33,13 @@ hist(crime$prbarr, breaks = 50, xlab = "probability of arrest", ylab = "Frequenc
 hist(crime$prbconv, breaks = 50, xlab = "probability of conviction", ylab = "Frequency", main = "Probabiity of Conviction Hist")
 hist(crime$polpc, breaks = 50, xlab = "police per capita", ylab = "Frequency", main = "Police Per Capita Hist")
 hist(crime$pctmin80, breaks = 50, xlab = "percent minority (1980)", ylab = "Frequency", main = "Percent Minority Hist")
+```
+It should be noted that we do see "probabilities" greater than 1 here for the probability of conviction variable.  A brief investigation into common crime statistics shows that the most common measures of convictions is actually conviction per thousands of people. (doesn't seem to be consistancy between states to use 1000, 10,000, or 100,000.)  We believe this is what this variable is measuring for each county.  
+
+Additionally, it should be noted, there was a significant outlier in the wser variable.  But this will not matter for reasons explained later.
+
+```{r}
+hist(crime$wser)
 ```
 
 Scatterplot matrices were developed for several variables to get an initial understanding of variable relationships. 
@@ -161,8 +168,13 @@ plot(model_3, which=1)
 Here we see evidence of nonlinear relationship at the lower end of the range of our dependant variable.  We address this by looking at the log-log relationship with respect to crimerte, density, and polpc, our variables that show the strongest evidence of skew.  
 
 ```{r}
-model_4<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
-             log(crime$polpc)+crime$pctmin80)
+crmrte<-log(crime$crmrte)
+density<-log(crime$density)
+prbarr<-crime$prbarr
+prbconv<-crime$prbconv
+polpc<-log(crime$polpc)
+pctmin<-crime$pctmin80
+model_4<-lm(crmrte~density+prbarr+prbconv+polpc+pctmin)
 plot(model_4)
 ```  
 
@@ -201,6 +213,7 @@ b. With current data, we can make an attempt to apply judgement to the relations
   Since we want to increase the probability of arrest and conviction, one way to do that is to increase the police force, not reduce it. In fact, we can see a significant positive correlation of police per cap with probability of arrest. 
   Note that it is possible that the desired outcomes can also be achieved by focusing the existing police force on arresting criminals vs other activities like traffic etc.
 
+\newpage
 ```{r}
 stargazer(model_4, type="text", se=list(se.model))
 ```
