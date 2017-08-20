@@ -89,9 +89,9 @@ summary(model31)
 
 ##Building a Model
 
-To build the model, we use a backwards approach.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.
+To build the model, we use a backwards approach.  We build 3 seperate models and with each iteration we remove variables.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Throughout, we explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.  
 
-```{r}
+```{r everything model}
 model_1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
                     +crime$avgsen+crime$polpc+crime$density+crime$taxpc
                     +crime$west+crime$central+crime$urban+crime$pctmin80
@@ -101,30 +101,45 @@ model_1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
 
 summary(model_1)
 ```  
-From here we trim the variables with the least explanatory power, but also it should be noted that some variables simply have very little correlation with our dependant variable crime rate, such as average sentence and probability of prison.  
+
+From here we trim the variables with the least explanatory power to produce model 2 or the trimmed model.  We note that while the r squared drops slightly, the adjusted r squared actually goes up.  
+
+```{r trimmed model}
+model_2<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80+crime$taxpc+crime$pctymle)
+summary(model_2)
+```  
+
+Some of these variables can we discarded simply on the grounds that they have very little correlation with the dependant variable.  
 
 ```{r}
-model_2<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
-             crime$polpc+crime$pctmin80)
-summary(model_2)$adj.r.square
 dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
 cor(dat_1)
 ```  
-[NOTE: this doesn't quite make sense. There are only 3 variables directly above. Do you mean the model_2 data?] From here, we see that these 5 variables contain almost all of the information of the other variables.  Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
 
-Density seems to be the strongest predictor of crime rate in the data.  We include it first but it should be noted that if the urban flag is used in lew of density the model loses very little explanatory power because the two are highly correlated so little information is added by including it, and since density is more highly correlated with our dependant variable we choose to use it over the urban flag.  
-```{r}
-summary(lm(crime$crmrte~crime$urban+crime$prbarr+crime$prbconv+
-             crime$polpc+crime$pctmin80))$adj.r.squared
-dat1<-data.frame(crime$crmrte,crime$density,crime$urban)
-cor(dat1)
-```  
-Next we turn to wages. Even alone they seem to have little predictive power.  It may be that case that what we really want to measure is not wages but unemployment as it may be that case that even if one doesn't have much money, they are at least employed and therefore will commit less crimes.
+For wages it seems even alone they have little predictive power.  It may be that case that what we really want to measure is not wages but unemployment as it may be that case that even if one doesn't have much money, they are at least employed and therefore will commit less crimes.  
 
-```{r}
+```{r wages}
 summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
            +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
-```
+```  
+
+To address why none of the flag variables, urban, west, and central, were not included in the trimmed model, we see that all three variables are highly correlated with values that are also in the model, but have higher correlations with the dependant variable. Or in the case of west, it is does have a higher correlation than pctmin80, but after removing the effects of including density into the model, it loses most of it's value.  
+
+```{r flag variables}
+dat_2<-data.frame(crime$crmrte,crime$density,crime$pctmin80,
+                  crime$prbconv,crime$urban, crime$west, crime$central)
+cor(dat_2)
+```  
+Finally we trim off the two variables with the lowest significance to produce our final model.  Taxpc and pctymle do add value to model but at the cost of brevity and understanding.  
+
+```{r slim model}
+model_3<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80)
+summary(model_3)
+AIC(model_2)
+AIC(model_3)
+```  
 
 
 \newpage
@@ -141,22 +156,22 @@ Here we verify the the six assumptions of our model:
   
 First we check for linearity by looking at the Residuals vs Fitted plot.    
 ```{r}
-plot(model_2, which=1)
+plot(model_3, which=1)
 ```  
 Here we see evidence of nonlinear relationship at the lower end of the range of our dependant variable.  We address this by looking at the log-log relationship with respect to crimerte, density, and polpc, our variables that show the strongest evidence of skew.  
 
 ```{r}
-model_3<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
+model_4<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
              log(crime$polpc)+crime$pctmin80)
-plot(model_3)
+plot(model_4)
 ```  
 
 This plot is very strong evidence that the log-log transform takes care of the linearity assumption and the zero conditional mean assumption.  Additionally, the normal QQ plot fits extremely well so we can safely assume we have normality of our residuals.  
 
 ```{r}
-dat_2<-data.frame(log(crime$density),log(crime$polpc),crime$prbarr,
+dat_3<-data.frame(log(crime$density),log(crime$polpc),crime$prbarr,
                   crime$prbconv,crime$pctmin80)
-vif(dat_2)
+vif(dat_3)
 ```  
 To check for multicollinearity we use the measured variance inflation factors shown above.  These values are sufficiently low for each of our independant variables so there is very little evidence of multicollinearity.
 
@@ -165,8 +180,8 @@ For the assumption of a random sample, we have to assume that the person gatheri
 Referring back to the Residuals vs Fitted plot, we see strong evidence of f heteroskedasticity and will use robust standard errors when assessing our model from here.
 
 ```{r}
-coeftest(model_3, vcov=vcovHC)
-se.model = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
+coeftest(model_4, vcov=vcovHC)
+se.model = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
 ```
 
 \newpage
@@ -187,5 +202,5 @@ b. With current data, we can make an attempt to apply judgement to the relations
   Note that it is possible that the desired outcomes can also be achieved by focusing the existing police force on arresting criminals vs other activities like traffic etc.
 
 ```{r}
-stargazer(model_3, type="text", se=list(se.model))
+stargazer(model_4, type="text", se=list(se.model))
 ```

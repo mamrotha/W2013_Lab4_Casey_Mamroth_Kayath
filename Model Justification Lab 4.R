@@ -60,3 +60,5 @@ cor(dat_f)
 model1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$polpc+
            crime$density+crime$taxpc+crime$pctmin80+crime$mix+crime$pctymle)
 summary(model1)
+
+lapply(crime[5:26], function(x) cor(crime$west, x))
