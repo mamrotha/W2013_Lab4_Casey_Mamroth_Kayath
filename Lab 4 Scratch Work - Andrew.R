@@ -155,3 +155,7 @@ coefficients(model_test)
 
 model_mich <- lm(crime$crmrte~crime$density+crime$pctmin80+crime$pctymle)
 summary(model_mich)
+
+hist(crime$mix)
+hist(log(crime$mix))
+

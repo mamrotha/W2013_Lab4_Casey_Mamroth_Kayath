@@ -57,58 +57,6 @@ dat_f<-data.frame(crime$crmrte,crime$density,crime$prbarr,
 cor(dat_f)
 
 #Test Stuff
-lapply(crime[5:26], function(x) cor(crime$prbarr,x))
-
-mod_sum<-summary(lm(crime$crmrte~crime$density+crime$prbconv+
-                      crime$prbarr+crime$polpc+
-                      crime$pctmin80-crime$pctmin80))
-adjsq<-mod_sum$adj.r.squared
-check<-mod_sum$residual
-lapply(crime[5:26], function(x) cor(check,x))
-check
-adjsq
-
-AIC(model_f)
-AIC(lm(crime$crmrte~crime$density))
-
-lapply(crime[5:26], function(x) 
-  AIC(lm(crime$crmrte~crime$density+crime$prbarr+crime$pctmin80+
-           crime$polpc+x)))
-
-summary(lm(log(crime$crmrte)~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
-           +crime$polpc+log(crime$density)+crime$taxpc+crime$west+crime$central
-           +crime$urban+crime$pctmin80+crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
-           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
-           +crime$pctymle))
-
-summary(lm(log(crime$crmrte)~log(crime$density)+crime$prbarr
-             +crime$prbconv+log(crime$polpc)+crime$pctmin80))
-
-summary(lm(log(crime$crmrte)~log(crime$density)+crime$prbarr
-           +crime$prbconv+log(crime$polpc)+crime$pctmin80))
-
-
-summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
-           +crime$polpc+crime$taxpc+crime$west+crime$central
-           +crime$urban+crime$pctmin80+crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
-           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
-           +crime$pctymle))
-
-summary(lm(crime$wfed~crime$prbarr+crime$prbconv+crime$prbpris+crime$avgsen
-           +crime$polpc+crime$density+crime$taxpc+crime$west+crime$central
-           +crime$urban+crime$pctmin80+crime$wcon+crime$wtuc+crime$wtrd
-           +crime$wfir+crime$wser+crime$wmfg+crime$crmrte+crime$wsta+crime$wloc
-           +crime$mix+crime$pctymle))
-
-redsid<-summary(lm(crime$crmrte~crime$density))$residual
-lapply(crime[5:26], function(x) cor(resid,x))
-
-summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
-           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
-
-model_1<-summary(lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
-                    +crime$avgsen+crime$polpc+crime$density+crime$taxpc
-                    +crime$west+crime$central+crime$urban+crime$pctmin80
-                    +crime$wcon+crime$wtuc+crime$wtrd+crime$wfir+crime$wser
-                    +crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
-                    +crime$pctymle))
+model1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$polpc+
+           crime$density+crime$taxpc+crime$pctmin80+crime$mix+crime$pctymle)
+summary(model1)

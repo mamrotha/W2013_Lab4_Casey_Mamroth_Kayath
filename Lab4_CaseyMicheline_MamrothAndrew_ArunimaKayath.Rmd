@@ -36,7 +36,7 @@ model_1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
 
 summary(model_1)
 ```  
-From here we trim the variables with the least explanatory power, but also it should be noted that some variables simply have very little correlation with our dependant variable crime rate, such as average sentence and probability of prison.  
+If we trim the variables with the least explanatory power, we are left with only five variables. It should be noted, that many of the variables excluded, can be removed simply on the basis of have little to no correlation with the dependant variable, such as average sentence length and probability of prison.  
 
 ```{r}
 model_2<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
@@ -45,22 +45,35 @@ summary(model_2)$adj.r.square
 dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
 cor(dat_1)
 ```  
-From here, we see that these 5 variables contain almost all of the information of the other variables.  Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
+we see here that these 5 variables contain almost all of the predicative power of the other variables, as we only see our r squared drops by less than .01. signifi. Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
 
-Density seems to be the strongest predictor of crime rate in the data.  We include it first but it should be noted that if the urban flag is used in lew of density the model loses very little explanatory power because the two are highly correlated so little information is added by including it, and since density is more highly correlated with our dependant variable we choose to use it over the urban flag.  
+Density seems to be the strongest predictor of crime rate in the data.  We include it first but it should be noted that if the urban flag is used in lew of density the model loses very little explanatory power because the two are highly correlated so little information is added by including it, and since density is more highly correlated with our dependant variable we choose to use it over the urban flag.  Also, to note, the central flag is more strongly correlated with density than with crimrte so it appears that once density is included in the model, most of the value of the central flag in terms of explanatory power is lost.  
 ```{r}
-summary(lm(crime$crmrte~crime$urban+crime$prbarr+crime$prbconv+
-             crime$polpc+crime$pctmin80))$adj.r.squared
-dat1<-data.frame(crime$crmrte,crime$density,crime$urban)
+model_3<-lm(crime$crmrte~crime$urban+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80)
+summary(model_3)$adj.r.squared
+dat1<-data.frame(crime$crmrte,crime$density,crime$urban,crime$central)
 cor(dat1)
 ```  
 Next we turn to wages. Even alone they seem to have little predictive power.  It may be that case that what we really want to measure is not wages but unemployment as it may be that case that even if one doesn't have much money, they are at least employed and therefore will commit less crimes.
 
 ```{r}
-summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
-           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
-```
+model_4<-lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
+           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc)
+summary(model_4)
+```  
+When looking at the flag for west, this variable is highly correlated with pctmin80 and is dropped from the model.  
 
+```{r}
+cor(crime$west, crime$pctmin80)
+```  
+For the remaining three variables, taxpc, mix, and pctymle that we did not include in the final model, they were dropped for the purpose of brevity.  If we do include them, the predicative power gets only marginally better and the complexity of the model suffers.
+
+```{r}
+model_5<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$polpc+
+           crime$density+crime$taxpc+crime$pctmin80+crime$mix+crime$pctymle)
+summary(model_5)
+```
 
 \newpage
 ##Verify Assumptions
@@ -81,9 +94,9 @@ plot(model_2, which=1)
 Here we see evidence of nonlinear relationship at the lower end of the range of our dependant variable.  We address this by looking at the log-log relationship with respect to crimerte, density, and polpc, our variables that show the strongest evidence of skew.  
 
 ```{r}
-model_3<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
+model_f<-lm(log(crime$crmrte)~log(crime$density)+crime$prbarr+crime$prbconv+
              log(crime$polpc)+crime$pctmin80)
-plot(model_3)
+plot(model_f)
 ```  
 
 This plot is very strong evidence that the log-log transform takes care of the linearity assumption and the zero conditional mean assumption.  Additionally, the normal QQ plot fits extremely well so we can safely assume we have normality of our residuals.  
@@ -100,13 +113,13 @@ For the assumption of a random sample, we have to assume that the person gatheri
 Referring back to the Residuals vs Fitted plot, we see strong evidence of f heteroskedasticity and will use robust standard errors when assessing our model from here.
 
 ```{r}
-coeftest(model_3, vcov=vcovHC)
-se.model = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
+coeftest(model_f, vcov=vcovHC)
+se.model = coeftest(model_f, vcov = vcovHC)[ , "Std. Error"]
 ```
 
 \newpage
 ##Conclusions
 
 ```{r}
-stargazer(model_3, type="text", se=list(se.model))
+stargazer(model_f, type="text", se=list(se.model))
 ```
