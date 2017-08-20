@@ -7,7 +7,8 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,fig.height = 4,comment = NA)
-setwd("C:/Users/mamro_000/Desktop/Berkeley Courses/W203 Stats/Week 13 Files/W2013_Lab4_Casey_Mamroth_Kayath")
+#setwd("C:/Users/mamro_000/Desktop/Berkeley Courses/W203 Stats/Week 13 Files/W2013_Lab4_Casey_Mamroth_Kayath")
+setwd("~/workspace/Stats/")
 crime <- read.csv("crime.csv")
 library(car)
 library(stargazer)
@@ -17,11 +18,76 @@ library(lmtest)
 ```
 
 ## Introduction
+The purpose of this analysis is to review a set crime data in support of understanding determinants of crime and generating policy recommendations for local governments for this political campaign. This analysis is based on a set of county-level data from North Carolina from 1987. However, this data set is not inclusive of all North Carolina counties. 
 
+In our first stage, an exploratory data analysis was undertaken in order to better understand the data set, the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. We also examined the relationships between variables from a variety of perspectives to support model building. Our second stage consisted of building and analyzing a set of linear models to determine the right mix of signficant explanatory variables, to identify best fit models, and to test all CLM assumptions. We use a backwards approach to model construction, meaning we first build a model that includes all the data we are given then remove the data with the least explanatory power. 
+
+Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model. We address bias, omitted variables, parsimony, and discussion of causality here. We conclude this paper with high-level set of recommendations and related notes.
 \newpage
+
 ##Exploratory Analysis
+A thorough exploratory analysis of the crimes data set was to better understand the data set, the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. Outlier data was reviewed for significance and possible patterns. We also examined the relationships between variables from a variety of perspectives to support model building. Histograms were run on all variables to understand their distributions. A select set for our key variables (crmrte, prbarr, prbconv, polpc, pctmin80) is provided here. 
+
+```{r histograms}
+hist(crime$crmrte, breaks = 50, xlab = "crime rate", ylab = "Frequency", main = "Crime Rate Hist")
+hist(crime$prbarr, breaks = 50, xlab = "probability of arrest", ylab = "Frequency", main = "Probability of Arrest Hist")
+hist(crime$prbconv, breaks = 50, xlab = "probability of conviction", ylab = "Frequency", main = "Probabiity of Conviction Hist")
+hist(crime$polpc, breaks = 50, xlab = "police per capita", ylab = "Frequency", main = "Police Per Capita Hist")
+hist(crime$pctmin80, breaks = 50, xlab = "percent minority (1980)", ylab = "Frequency", main = "Percent Minority Hist")
+```
+
+Scatterplot matrices were developed for several variables to get an initial understanding of variable relationships. 
+```{r scatterplot matrices}
+scatterplotMatrix(~crmrte + prbarr + prbconv + prbpris + avgsen, data=crime)
+scatterplotMatrix(~crmrte + polpc + density + taxpc, data=crime)
+scatterplotMatrix(~crmrte + pctmin80 + pctymle, data=crime)
+scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data=crime)
+```
+
+Finally, we added to this by analyzing bivariate and multivariate relationships between a number of variables and combinations of variables. We looked at the R squared values, adjusted R squared values, p values, and correlation values for significance. Several of these are included below. 
+
+```{r plots}
+plot(crime$polpc, crime$crmrte)
+model3 <- lm(crmrte~polpc, data = crime)
+model3
+abline(model3)
+summary(model3)  
+cor(crime$crmrte, crime$polpc, use="pairwise.complete.obs")
+
+plot(crime$density, crime$crmrte)
+model4 <- lm(crmrte~density, data = crime)
+model4
+abline(model4)
+summary(model4)   
+cor(crime$crmrte, crime$density, use="pairwise.complete.obs") 
+
+plot(crime$taxpc, crime$crmrte)
+model5 <- lm(crmrte~taxpc, data = crime)
+model5
+abline(model5)
+summary(model5)  
+cor(crime$crmrte, crime$taxpc, use="pairwise.complete.obs") 
+
+plot(crime$pctmin80, crime$crmrte)
+model6 <- lm(crmrte~pctmin80, data = crime)
+model6
+abline(model6)  
+summary(model6)  
+cor(crime$crmrte, crime$pctmin80, use="pairwise.complete.obs") 
+
+model21 <- lm(crmrte~polpc + density + taxpc, data = crime)
+summary(model21)  
+model22 <- lm(crmrte~polpc + density, data = crime)
+summary(model22)   
+model29 <- lm(crmrte~pctmin80 + pctymle + density, data = crime)
+summary(model29)   
+model31 <- lm(crmrte~pctmin80 + density, data = crime)
+summary(model31)  
+```
+
 
 \newpage
+
 ##Building a Model
 
 To build the model, we use a backwards approach.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.
@@ -45,7 +111,7 @@ summary(model_2)$adj.r.square
 dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
 cor(dat_1)
 ```  
-From here, we see that these 5 variables contain almost all of the information of the other variables.  Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
+[NOTE: this doesn't quite make sense. There are only 3 variables directly above. Do you mean the model_2 data?] From here, we see that these 5 variables contain almost all of the information of the other variables.  Now that we have a model, we need to understand why these 5 variables cover all of the information we need for the model.  
 
 Density seems to be the strongest predictor of crime rate in the data.  We include it first but it should be noted that if the urban flag is used in lew of density the model loses very little explanatory power because the two are highly correlated so little information is added by including it, and since density is more highly correlated with our dependant variable we choose to use it over the urban flag.  
 ```{r}
