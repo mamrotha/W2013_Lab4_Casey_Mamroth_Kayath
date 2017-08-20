@@ -173,6 +173,20 @@ se.model = coeftest(model_3, vcov = vcovHC)[ , "Std. Error"]
 \newpage
 ##Conclusions
 
+The strongest variables showing correlation with crimerate are : population density, probability of arrest, probability of conviction, police per capita and percent minority. There are a few observations wrt these variables that are key to consider before we make policy decisions.
+
+a. In order to make policy changes based on these decisons, we would need an idea of causality, not just correlations. However, it is hard to interpret causality here since several key variables that could affect crime rate are missing here e.g unemployment rate, poverty rate. So it would be very helpful to get data on these variables for doing analysis on causality
+
+b. With current data, we can make an attempt to apply judgement to the relationships that show up as significant to then make policy choices. In this context : 
+
+  1. - while population density and percent minority are significant varibles, there is very little we can do from a policy point of view to change these. However, it is important to include these variables in the model to be able to see the effect of the other variables net of these.
+  2. Both probabilty of arrest and probability of conviction show significant negative correlation with crime rate. It suggests that the higher the likelihood of being arrested and convicted for a crime, the lesser the likelihood of a crime. ie arrest and conviction are significant deterrants to crime. Hence policy changes that lead to an increase in  catching the criminals would be good to reduce crime. 
+  3. Interestingly, average sentence, and probability of prison sentence did not show up as significant, even though they are not very correlated with the other two variables that show the adverse consequence of crime for the criminal ie probability of arrest, and probability of conviction. This suggests that whether the criminal is caught and convicted is more important than the magnitude or nature of the sentence if convicted. 
+  So policy should focus on law enforcement initiatives that lead to greater success in arrest and conviction.
+  4. Police per capita has a positive correlation with crime rate. Clearly, increasing police cannot lead to increase in crime rate. This may be a case where increase in crime rate leads to increasing the size of the police force ie the causality is the other way. 
+  Since we want to increase the probability of arrest and conviction, one way to do that is to increase the police force, not reduce it. In fact, we can see a significant positive correlation of police per cap with probability of arrest. 
+  Note that it is possible that the desired outcomes can also be achieved by focusing the existing police force on arresting criminals vs other activities like traffic etc.
+
 ```{r}
 stargazer(model_3, type="text", se=list(se.model))
 ```
