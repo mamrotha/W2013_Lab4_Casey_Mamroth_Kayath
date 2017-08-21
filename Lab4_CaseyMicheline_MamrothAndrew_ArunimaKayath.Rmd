@@ -41,6 +41,14 @@ Additionally, it should be noted, there was a significant outlier in the wser va
 ```{r}
 hist(crime$wser)
 ```
+For some of the most skewed variables, polpc, density, and crmrte, we also look at the log transform.  
+
+```{r}
+hist(log(crime$crmrte))
+hist(log(crime$density))
+hist(log(crime$polpc))
+```  
+Here, we see that these variables take on a near normal distribution under a log transform.  
 
 Scatterplot matrices were developed for several variables to get an initial understanding of variable relationships. 
 ```{r scatterplot matrices}
