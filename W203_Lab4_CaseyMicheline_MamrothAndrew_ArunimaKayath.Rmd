@@ -1,0 +1,257 @@
+---
+title: "Lab4_CaseyMicheline_MamrothAndrew_ArunimaKayath_Draft"
+author: "Andrew Mamroth"
+date: "August 13, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.height = 4,comment = NA)
+crime <- read.csv("crime.csv")
+library(car)
+library(stargazer)
+library(usdm)
+library(sandwich)
+library(lmtest)
+```
+
+## Introduction
+The purpose of this analysis is to review a set crime data in support of understanding determinants of crime and generating policy recommendations for local governments for this political campaign. This analysis is based on a set of county-level data from North Carolina from 1987. However, this data set is not inclusive of all North Carolina counties. 
+
+In our first stage, an exploratory data analysis was undertaken in order to better understand the data set, the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. We also examined the relationships between variables from a variety of perspectives to support model building. Our second stage consisted of building and analyzing a set of linear models to determine the right mix of signficant explanatory variables, to identify best fit models, and to test all CLM assumptions. We use a backwards approach to model construction, meaning we first build a model that includes all the data we are given then remove the data with the least explanatory power. 
+
+Following that, we then explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model. We address bias, omitted variables, parsimony, and discussion of causality here. We conclude this paper with high-level set of recommendations and related notes.
+\newpage
+
+##Exploratory Analysis
+A thorough exploratory analysis of the crimes data set was performed to better understand the variables, anomolies, and any variable transformations that may need to be done to provide a robust set of models. Outlier data was reviewed for significance and possible patterns. We also examined the relationships between variables from a variety of perspectives to support model building. Histograms were run on all variables to understand their distributions. A select set for our key variables (crmrte, prbarr, prbconv, polpc, pctmin80) is provided here. 
+
+```{r histograms}
+hist(crime$crmrte, breaks = 50, xlab = "crime rate", ylab = "Frequency", main = "Crime Rate Hist")
+hist(crime$prbarr, breaks = 50, xlab = "probability of arrest", ylab = "Frequency", main = "Probability of Arrest Hist")
+hist(crime$prbconv, breaks = 50, xlab = "probability of conviction", ylab = "Frequency", main = "Probabiity of Conviction Hist")
+hist(crime$polpc, breaks = 50, xlab = "police per capita", ylab = "Frequency", main = "Police Per Capita Hist")
+hist(crime$pctmin80, breaks = 50, xlab = "percent minority (1980)", ylab = "Frequency", main = "Percent Minority Hist")
+```
+It should be noted that we do see "probabilities" greater than 1 here for the probability of conviction variable.  A brief investigation into common crime statistics shows that the most common measures of convictions is actually conviction per thousands of people. (doesn't seem to be consistancy between states to use 1000, 10,000, or 100,000.)  We believe this is what this variable is measuring for each county.  
+
+Additionally, it should be noted, there was a significant outlier in the wser variable.  But this will not matter for reasons explained later.
+
+```{r}
+hist(crime$wser)
+```
+For some of the most skewed variables, polpc, density, and crmrte, we also look at the log transform.  
+
+```{r}
+hist(log(crime$crmrte))
+hist(log(crime$density))
+hist(log(crime$polpc))
+```  
+Here, we see that these variables take on a near normal distribution under a log transform.  
+
+Scatterplot matrices were developed for several variables to get an initial understanding of variable relationships. 
+```{r scatterplot matrices}
+scatterplotMatrix(~crmrte + prbarr + prbconv + prbpris + avgsen, data=crime)
+scatterplotMatrix(~crmrte + polpc + density + taxpc, data=crime)
+scatterplotMatrix(~crmrte + pctmin80 + pctymle, data=crime)
+scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data=crime)
+```
+
+Finally, we added to this by analyzing bivariate and multivariate relationships between a number of variables and combinations of variables. We looked at the R squared values, adjusted R squared values, p values, and correlation values for significance. Several of these are included below. 
+
+```{r correlations and plots}
+
+cor(crime[4:26])
+
+plot(crime$density, crime$crmrte)
+modela <- lm(crmrte~density, data = crime)
+modela
+abline(modela)
+summary(modela)   
+cor(crime$crmrte, crime$density, use="pairwise.complete.obs") 
+
+modelb <- lm(crmrte~density+urban, data = crime)
+modelb
+summary(modelb)
+
+modelc <- lm(crmrte~density+prbarr+prbconv+prbpris+avgsen, data = crime)
+modelc
+summary(modelc)
+
+modeld <- lm(crmrte~density+wcon+wtuc+wtrd+wfir+wser+wmfg+wfed+wsta+wloc, data = crime)
+modeld
+summary(modeld)
+waldtest(modela,modeld,vcov = vcovHC)
+
+```
+Key observations from correlations and plots :
+
+* From the correlations, density is the most strongly correlated with crime rate.
+* Urban also looks very correlated with crime rate, but doesn't show up as significant once density is included in the model (model b vs model a)
+* probability of arrest and conviction show strong negative correlation with crime rate and show up as significant even after including density. (model c vs model a above)
+* several of the taxpc and wage variables show some positive correlation with crimerate. This is counterintuitive, as higher tax and wages should correlate with higher income and hence lower crime, not higher crime. The wage variables don't show up as significant once density is included in the model, either singly, or jointly (as seen in the F-test for a model including all the wage variables (modeld) and density vs a pure density model(modela))
+
+
+\newpage
+
+##Building a Model
+
+To build the model, we use a backwards approach.  We build 3 seperate models and with each iteration we remove variables.  We first build a model that includes all the data we are given then remove the data with the least explanatory power. Throughout, we explain why the information for the variables removed is already incorporated into the model and thus why it is excluded from the final model.  
+
+```{r everything model}
+model_1<-lm(crime$crmrte~crime$prbarr+crime$prbconv+crime$prbpris
+                    +crime$avgsen+crime$polpc+crime$density+crime$taxpc
+                    +crime$west+crime$central+crime$urban+crime$pctmin80
+                    +crime$wcon+crime$wtuc+crime$wtrd+crime$wfir+crime$wser
+                    +crime$wmfg+crime$wfed+crime$wsta+crime$wloc+crime$mix
+                    +crime$pctymle)
+
+summary(model_1)
+```  
+
+From here we trim the variables with the least explanatory power to produce model 2 or the trimmed model.  We note that while the r squared drops slightly, the adjusted r squared actually goes up.  
+
+```{r trimmed model}
+model_2<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80+crime$taxpc+crime$pctymle)
+summary(model_2)
+```  
+
+Some of these variables can we discarded simply on the grounds that they have very little correlation with the dependant variable.  
+
+```{r}
+dat_1<-data.frame(crime$crmrte,crime$avgsen,crime$prbpris)
+cor(dat_1)
+```  
+
+For wages it seems even alone they have little predictive power.  It may be that case that what we really want to measure is not wages but unemployment as it may be that case that even if one doesn't have much money, they are at least employed and therefore will commit less crimes.  
+
+```{r wages}
+summary(lm(crime$crmrte~crime$wcon+crime$wtuc+crime$wtrd+crime$wfir
+           +crime$wser+crime$wmfg+crime$wfed+crime$wsta+crime$wloc))
+```  
+
+To address why none of the flag variables, urban, west, and central, were not included in the trimmed model, we see that all three variables are highly correlated with values that are also in the model, but have higher correlations with the dependant variable. Or in the case of west, it is does have a higher correlation than pctmin80, but after removing the effects of including density into the model, it loses most of it's value.  
+
+```{r flag variables}
+dat_2<-data.frame(crime$crmrte,crime$density,crime$pctmin80,
+                  crime$prbconv,crime$urban, crime$west, crime$central)
+cor(dat_2)
+```  
+Finally we trim off the two variables with the lowest significance to produce our final model.  Taxpc and pctymle do add value to model but at the cost of brevity and understanding.  
+
+```{r slim model}
+model_3<-lm(crime$crmrte~crime$density+crime$prbarr+crime$prbconv+
+             crime$polpc+crime$pctmin80)
+summary(model_3)
+AIC(model_2)
+AIC(model_3)
+```  
+
+
+\newpage
+##Verify Assumptions
+
+Here we verify the the six assumptions of our model:  
+
+  1) Linearity of the Parameters
+  2) Random Sampling
+  3) No Perfect Multicollinearity
+  4) Zero Conditional Mean
+  5) Homoskedasticity
+  6) Normality of Residuals
+  
+First we check for linearity by looking at the Residuals vs Fitted plot.    
+```{r}
+plot(model_3, which=1)
+```  
+Here we see evidence of nonlinear relationship at the lower end of the range of our dependant variable.  We address this by looking at the log-log relationship with respect to crimerte, density, and polpc, our variables that show the strongest evidence of skew.  
+
+```{r}
+crmrte<-log(crime$crmrte)
+density<-log(crime$density)
+prbarr<-crime$prbarr
+prbconv<-crime$prbconv
+polpc<-log(crime$polpc)
+pctmin<-crime$pctmin80
+model_4<-lm(crmrte~density+prbarr+prbconv+polpc+pctmin)
+plot(model_4)
+summary(model_4)
+```  
+
+This plot is very strong evidence that the log-log transform takes care of the linearity assumption and the zero conditional mean assumption.  Additionally, the normal QQ plot fits extremely well so we can safely assume we have normality of our residuals.  
+
+```{r}
+dat_3<-data.frame(log(crime$density),log(crime$polpc),crime$prbarr,
+                  crime$prbconv,crime$pctmin80)
+vif(dat_3)
+```  
+To check for multicollinearity we use the measured variance inflation factors shown above.  These values are sufficiently low for each of our independant variables so there is very little evidence of multicollinearity.
+
+For the assumption of a random sample, we have to assume that the person gathering the data for the model took proper precautions to gather a truly random sample. We could gather a second sample and compare the distributions of the two samples and see how similar they are, but this would likely be costly and time consuming.  For the purposes of this study, we assume that the person gathering the information used due diligence to gather a sample that is representative of the larger population of counties that the candidate intends to represent.  
+
+Referring back to the Residuals vs Fitted plot, we see strong evidence of heteroskedasticity and will use robust standard errors when assessing our model from here.
+
+```{r}
+coeftest(model_4, vcov=vcovHC)
+se.model = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
+stargazer(model_4, type="text", se=list(se.model))
+```
+
+```{r practical significance}
+(m_crmrte <- mean(crime$crmrte))
+(m_density <- mean(crime$density))
+(sd_density <- sqrt(var(crime$density))) # standard deviation of density
+(m_prbarr <-mean(prbarr))
+(sd_prbarr <- sqrt(var(prbarr))) # standard deviation of probability of arrest
+(m_prbconv <- mean(prbconv))
+(sd_prbconv <- sqrt(var(prbconv)))  # standard deviation of probability of conviction
+(m_polpc <- mean(crime$polpc))
+(sd_polpc <- sqrt(var(crime$polpc)))
+(m_pctmin80 <- mean(pctmin))
+(sd_pctmin80 <- sqrt(var(pctmin)))
+
+(model_4$coefficients[2]*sd_density) # % change in crime rate with 1 standard deviation % change in density
+(100*model_4$coefficients[3]*sd_prbarr) # % change in crime rate with 1 standard deviation change in probability arrest
+(100*model_4$coefficients[4]*sd_prbconv) # % change in crime rate with 1 standard deviation change in probability of conviction
+(model_4$coefficients[5]*sd_polpc)  # % change in crime rate with 1 standard deviation % change in polpc
+(100*model_4$coefficients[6]*sd_pctmin80)  # % change in crime rate with 1 standard deviation change in percent minority
+(cor(crime$prbarr,crime$polpc))
+
+```
+
+# Discussion of practical significance.
+
+In order to look at practical significance, we looked at the change in crime rate with a 1 standard deviation change in the statistically significant variables. We observe that density, probability of arrest (prbarr), probability of conviction(prbconv) and percent minority are all practically significant. However, police per capita is not practically significant once the other variables have been accounted for. Of course, since prbarr is correlated with polpc, it's effect might have been picked up by this variable. Intuitively, in order for probability of arrest to be high, police per cap has to be sufficiently high.
+
+\newpage
+##Discussion of causality
+
+The clear statistically significant variables showing correlation with crimerate are : population density, probability of arrest, probability of conviction, police per capita and percent minority. There are a few observations wrt these variables that are key to consider before we make policy decisions.
+
+a. In order to make policy changes based on these decisons, we would need an idea of causality, not just correlations. However, it is hard to interpret causality here since several key variables that could affect crime rate are missing here e.g unemployment rate, poverty rate. So it would be very helpful to get data on these variables for doing analysis on causality
+
+b. With current data, we can make an attempt to apply judgement to the relationships that show up as significant to then make policy choices. In this context :   
+
+  1. While population density and percent minority are significant varibles, there is very little we can do from a policy point of view to change these. However, it is important to include these variables in the model to be able to see the effect of the other variables net of these.  
+  2. Both probabilty of arrest and probability of conviction show significant negative correlation with crime rate. It suggests that the higher the likelihood of being arrested and convicted for a crime, the lesser the likelihood of a crime. ie arrest and conviction are significant deterrants to crime. Hence policy changes that lead to an increase in  catching the criminals would be good to reduce crime.   
+  3. Interestingly, average sentence, and probability of prison sentence did not show up as significant, even though they are not very correlated with the other two variables that show the adverse consequence of crime for the criminal ie probability of arrest, and probability of conviction. This suggests that whether the criminal is caught and convicted is more important than the magnitude or nature of the sentence if convicted.   
+  So policy should focus on law enforcement initiatives that lead to greater success in arrest and conviction.
+  4. Police per capita has a positive correlation with crime rate. Clearly, increasing police cannot lead to increase in crime rate.The magnitude of the effect is not practically significant. In addition, since police per cap is correlated with probability of arrest (correlation = 0.43), it is possible that the effect of police per cap is picked up in the probability of arrest.
+  
+  Since we want to increase the probability of arrest and conviction, one way to do that is to increase the police force, not reduce it.   
+  
+  Note that it is possible that the desired outcomes can also be achieved by focusing the existing police force on arresting criminals vs other activities like traffic etc.  
+  
+##Conclusions
+- While we have 25 variables available to predict crime rate, only 4 were statistically and practically significant ie density, probability of arrest, probability of conviction, percent minority. Police per cap was statistically significant but not practically significant. It's sign is also counterintuitive.  
+
+- In order to have a model that can give us unbiased estimates (MLR1-4), and to reduce heteroskedasticity, we had to take the log transform for three variables - crime rate, population density, and police per capita.  
+
+- Causality is hard to intepret from the model directly because several potentially important factors that may affect crime rate like unemployment, poverty level are missing from the data. Collecting this data may lead to better causality models.  
+
+- Population density is an important variable amongst those already collected in predicting crime per cap. Since this is not under policy control, we can't use this to drive policy. However, it is important to include this variable in the model so that we can see the effect of the other variables controlling for population density.  
+
+- The significant variables for which we can do something via policy are probability of arrest, and probability of conviction. Interestingly, length of sentence did not matter once criminals were arrested and convicted.  
+
+- So policy change should be directed to increasing the likelihood of a criminal being caught and convicted irrespective of the size of the crime. This is similar to the "no broken windows" policy implemented in New York in the 90's - where every broken window / suspicious activity was investigated and this led to a dramatic reduction in crime in the city.  
