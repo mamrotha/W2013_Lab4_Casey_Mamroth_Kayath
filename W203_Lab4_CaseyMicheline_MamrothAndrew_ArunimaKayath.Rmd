@@ -57,7 +57,7 @@ scatterplotMatrix(~crmrte + pctmin80 + pctymle, data=crime)
 scatterplotMatrix(~polpc + density + taxpc + pctmin80 + pctymle, data=crime)
 ```
 
-Finally, we added to this by analyzing bivariate and multivariate relationships between a number of variables and combinations of variables. We looked at the R squared values, adjusted R squared values, p values, and correlation values for significance. Several of these are included below. 
+Finally, we added to this by analyzing bivariate and multivariate relationships between a number of variables and combinations of variables. We looked at the bivariate correlations, R squared values, p values, for significance. Several of these are included below. 
 
 ```{r correlations and plots}
 
@@ -197,7 +197,8 @@ coeftest(model_4, vcov=vcovHC)
 se.model = coeftest(model_4, vcov = vcovHC)[ , "Std. Error"]
 stargazer(model_4, type="text", se=list(se.model))
 ```
-
+\newpage
+# Practical significance.
 ```{r practical significance}
 (m_crmrte <- mean(crime$crmrte))
 (m_density <- mean(crime$density))
@@ -207,9 +208,9 @@ stargazer(model_4, type="text", se=list(se.model))
 (m_prbconv <- mean(prbconv))
 (sd_prbconv <- sqrt(var(prbconv)))  # standard deviation of probability of conviction
 (m_polpc <- mean(crime$polpc))
-(sd_polpc <- sqrt(var(crime$polpc)))
+(sd_polpc <- sqrt(var(crime$polpc))) # standard deviation of police per capita
 (m_pctmin80 <- mean(pctmin))
-(sd_pctmin80 <- sqrt(var(pctmin)))
+(sd_pctmin80 <- sqrt(var(pctmin))) # standard deviation of percent minority, 1980
 
 (model_4$coefficients[2]*sd_density) # % change in crime rate with 1 standard deviation % change in density
 (100*model_4$coefficients[3]*sd_prbarr) # % change in crime rate with 1 standard deviation change in probability arrest
@@ -220,12 +221,11 @@ stargazer(model_4, type="text", se=list(se.model))
 
 ```
 
-# Discussion of practical significance.
+## Discussion of practical significance.
 
 In order to look at practical significance, we looked at the change in crime rate with a 1 standard deviation change in the statistically significant variables. We observe that density, probability of arrest (prbarr), probability of conviction(prbconv) and percent minority are all practically significant. However, police per capita is not practically significant once the other variables have been accounted for. Of course, since prbarr is correlated with polpc, it's effect might have been picked up by this variable. Intuitively, in order for probability of arrest to be high, police per cap has to be sufficiently high.
 
-\newpage
-##Discussion of causality
+# Discussion of causality
 
 The clear statistically significant variables showing correlation with crimerate are : population density, probability of arrest, probability of conviction, police per capita and percent minority. There are a few observations wrt these variables that are key to consider before we make policy decisions.
 
@@ -243,7 +243,7 @@ b. With current data, we can make an attempt to apply judgement to the relations
   
   Note that it is possible that the desired outcomes can also be achieved by focusing the existing police force on arresting criminals vs other activities like traffic etc.  
   
-##Conclusions
+# Conclusions
 - While we have 25 variables available to predict crime rate, only 4 were statistically and practically significant ie density, probability of arrest, probability of conviction, percent minority. Police per cap was statistically significant but not practically significant. It's sign is also counterintuitive.  
 
 - In order to have a model that can give us unbiased estimates (MLR1-4), and to reduce heteroskedasticity, we had to take the log transform for three variables - crime rate, population density, and police per capita.  
